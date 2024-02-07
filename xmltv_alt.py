@@ -1,5 +1,5 @@
 """
-xmltv.py - Python interface to XMLTV format, based on XMLTV.pm
+xmltv_alt.py - Python interface to XMLTV format, based on XMLTV.pm
 
 Copyright (C) 2001 James Oakley <jfunk@funktronics.ca>
 
@@ -14,22 +14,16 @@ PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License along
 with this software; if not, see <http://www.gnu.org/licenses/>.
+
+---
+Edits - Justin Horner
+Found package originally @ https://pypi.org/project/python-xmltv/
+
 """
+from xml.etree.cElementTree import ElementTree, Element, SubElement
 
-import re
-import sys
-import types
-
-if sys.hexversion >= 0x2050000:
-    from xml.etree.cElementTree import ElementTree, Element, SubElement, tostring
-else:
-    try:
-        from cElementTree import ElementTree, Element, SubElement, tostring
-    except ImportError:
-        from elementtree.ElementTree import ElementTree, Element, SubElement, tostring
-
-# The Python-XMLTV version
-VERSION = "1.4.4"
+# The Python-XMLTV-ALT version
+VERSION = "1.5.0"
 
 # The date format used in XMLTV (the %Z will go away in 0.6)
 date_format = '%Y%m%d%H%M%S %Z'
@@ -43,7 +37,7 @@ def set_attrs(d, elem, attrs):
     Add any attributes in 'attrs' found in 'elem' to 'd'
     """
     for attr in attrs:
-        if attr in elem:
+        if attr in elem.keys():
             d[attr] = elem.get(attr)
 
 def set_boolean(d, name, elem):
@@ -223,8 +217,13 @@ def elem_to_programme(elem):
         if 'rating' not in d:
             d['rating'] = []
         ratd = {}
+        if ratnode.text.strip() == '':
+            continue
         set_attrs(ratd, ratnode, ('system',))
-        set_text(ratd, 'value', ratnode, with_lang=False)
+        if 'value' not in ratd:
+            d['rating'].append((ratnode.text, ratnode.get('system')))
+        else:
+            set_text(ratd, 'value', ratnode, with_lang=False)
         append_icons(ratd, ratnode)
         d['rating'].append(ratd)
 
@@ -337,7 +336,7 @@ class Writer:
                      'generator-info-name': generator_info_name}
 
         self.root = Element('tv')
-        for attr in self.data:
+        for attr in self.data.keys():
             if self.data[attr]:
                 self.root.set(attr, self.data[attr])
 
@@ -540,13 +539,19 @@ class Writer:
         # Rating
         if 'rating' in programme:
             for rating in programme['rating']:
-                r = SubElement(p, 'rating')
-                if 'system' in rating:
-                    self.setattr(r, 'system', rating['system'])
-                v = SubElement(r, 'value')
-                self.settext(v, rating['value'], with_lang=False)
-                if 'icon' in rating:
-                    self.seticons(r, rating['icon'])
+                if type(rating) is tuple:
+                    r = SubElement(p, 'rating')
+                    self.setattr(r, 'system', rating[1])
+                    v = SubElement(r, 'value')
+                    self.settext(v, rating[0], with_lang=False)
+                elif type(rating) is dict:
+                    if 'system' and 'value' in rating:
+                        r = SubElement(p, 'rating')
+                        self.setattr(r, 'system', rating['system'])
+                        v = SubElement(r, 'value')
+                        self.settext(v, rating['value'], with_lang=False)
+                        if 'icon' in rating:
+                            self.seticons(r, rating['icon'])
 
         # Star rating
         if 'star-rating' in programme:
@@ -557,7 +562,7 @@ class Writer:
                 v = SubElement(sr, 'value')
                 self.settext(v, star_rating['value'], with_lang=False)
                 if 'icon' in star_rating:
-                    self.seticons(sr, rating['icon'])
+                    self.seticons(sr, star_rating['icon'])
 
         # Review
         if 'review' in programme:
@@ -610,10 +615,7 @@ class Writer:
 if __name__ == '__main__':
 # Tests
     from pprint import pprint
-    try:
-        from StringIO import StringIO
-    except ImportError:
-        from io import StringIO
+    from io import StringIO
     import sys
 
     # An example file
@@ -752,7 +754,4 @@ if __name__ == '__main__':
         w.addChannel(c)
     for p in programmes:
         w.addProgramme(p)
-    try:
-    	w.write(sys.stdout.buffer, pretty_print=True)
-    except AttributeError:
-    	w.write(sys.stdout, pretty_print=True)
+    w.write(sys.stdout, pretty_print=True)

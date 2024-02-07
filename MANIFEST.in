@@ -6,7 +6,7 @@ include MANIFEST.in
 include README.txt
 include TODO.txt
 include setup.py
-include xmltv.py
+include xmltv_alt.py
 include xmltv.dtd
 global-exclude CVS
 global-exclude .svn
