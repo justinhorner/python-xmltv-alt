@@ -1,44 +1,49 @@
-python-xmltv
+python-xmltvalt
 ============
 
 Introduction
 ------------
-python-xmltv is a Python module that provides access to XMLTV data. XMLTV is
+python-xmltvalt is a Python module that provides access to XMLTV data. XMLTV is
 an XML format for storing TV listings.
 
 More information on XMLTV can be found at http://wiki.xmltv.org.
 
+This is a fork of the original 'pythong-xmltv' project
+(https://pypi.org/project/python-xmltv/) and has some slight modifications
+to resolve issues I found when trying to implement solutions for another
+(forthcoming) open source project.
+
+Many thanks to the original author, and the individual who cloned the
+original code (https://github.com/mforkel/python-xmltv).
 
 Requirements
 ------------
-There are no requirements for Python 2.5 and up. For older versions,
-ElementTree is required, which can be found at
-http://effbot.org/zone/element-index.htm
+There are no requirements for Python 3.12 and up.
 
 
 Usage
 -----
 Usage of the module is generally straight-forward::
 
-    import xmltv
+    import xmltv_alt
     from pprint import pprint
 
     # If you need to change the locale:
-    # xmltv.locale = 'Latin-1'
+    # xmltv_alt.locale = 'Latin-1'
 
     # If you need to change the date format used in the XMLTV file:
-    # xmltv.date_format = '%Y%m%d%H%M%S %Z'
+    # xmltv_alt.date_format = '%Y%m%d%H%M%S %Z'
 
     filename = '/path/to/xmltv/file'
 
     # Print info for XMLTV file (source, etc.)
-    pprint(xmltv.read_data(open(filename, 'r')))
+    pprint(xmltv_alt.read_data(open(filename, 'r')))
 
     # Print channels
-    pprint(xmltv.read_channels(open(filename, 'r')))
+    pprint(xmltv_alt.read_channels(open(filename, 'r')))
 
     # Print programmes
-    pprint(xmltv.read_programmes(open(filename, 'r')))
+    pprint(xmltv_alt.read_programmes(open(filename, 'r')))
 
 There are currently three functions for reading that should be used:
 
@@ -176,5 +181,5 @@ It contains the following methods:
 
 Reporting Bugs
 --------------
-Please send all bugs, comments, and questions to James Oakley
-<jfunk@funktronics.ca>
+Please send all bugs, comments, and questions to the github repo
+https://github.com/justinhorner/python-xmltv-alt
